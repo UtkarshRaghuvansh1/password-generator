@@ -1,10 +1,12 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 function App() {
   const [length, setLength] = useState(8);
   const [numAllowed, setNumAllowed] = useState(false);
   const [charAllowed, setCharAllowed] = useState("");
-  const [password, setPassword] = useState();
+  const [password, setPassword] = useState("");
+  // Use Ref Hook
+  const passwordReference = useRef(null);
 
   const passwordGenerator = useCallback(() => {
     let pass = "";
@@ -20,16 +22,25 @@ function App() {
       //generate password
       pass += str.charAt(Math.floor(Math.random() * str.length + 1));
     }
-    console.log(pass);
+    // console.log(pass);
     // Set password
     setPassword(pass);
   }, [length, numAllowed, charAllowed, setPassword]);
 
-  // passwordGenerator(); // Infinite Loop
+  const copyPasswordToClipboard = useCallback(() => {
+    // highlight the select the password
+    passwordReference.current?.select();
+    // can also select range
+    // passwordReference.current.setSelectionRange(0, 10);
 
+    window.navigator.clipboard.writeText(password);
+  }, [password]);
+
+  // passwordGenerator(); // Infinite Loop
   useEffect(() => {
     passwordGenerator();
-  }, [length, numAllowed, charAllowed]);
+  }, [length, numAllowed, charAllowed, setPassword]);
+
   return (
     <div className="w-full max-w-md mx-auto bg-gray-900 text-orange-400 rounded-2xl shadow-lg p-6 my-12">
       <h1 className="text-3xl font-semibold text-center text-white mb-6">
@@ -42,9 +53,13 @@ function App() {
           value={password}
           className="w-full bg-gray-800 text-white placeholder-gray-500 py-3 px-4 outline-none"
           placeholder="Your secure password"
+          ref={passwordReference}
           readOnly
         />
-        <button className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-3 text-base transition-all duration-200">
+        <button
+          className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-3 text-base transition-all duration-200"
+          onClick={copyPasswordToClipboard}
+        >
           Copy
         </button>
       </div>
